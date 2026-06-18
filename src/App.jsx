@@ -35,13 +35,23 @@ export default function App() {
   useEffect(() => {
     if (!introDone) return
 
+    // Hero: auto-play PPT-style — elemen muncul satu per satu
+    // urutan DOM: eyebrow, h1, role, cbs, bio, edu-chip, hero-actions, photo-wrap, hl, scroll-hint
+    const heroDelays = [0, 420, 780, 1080, 1380, 1720, 2060, 360, 2420, 2820]
+    const timers = []
+    document.querySelectorAll('.hero-seq').forEach((el, i) => {
+      const t = setTimeout(() => el.classList.add('in'), heroDelays[i] ?? i * 380)
+      timers.push(t)
+    })
+
+    // Sections bawah: IntersectionObserver seperti biasa
     const io = new IntersectionObserver(
       entries => entries.forEach(e => {
         if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target) }
       }),
       { threshold: 0.1 }
     )
-    document.querySelectorAll('.rv').forEach(el => io.observe(el))
+    document.querySelectorAll('.rv:not(.hero-seq)').forEach(el => io.observe(el))
 
     const cup = new IntersectionObserver(
       entries => entries.forEach(e => {
@@ -102,6 +112,7 @@ export default function App() {
     })
 
     return () => {
+      timers.forEach(clearTimeout)
       io.disconnect()
       cup.disconnect()
       window.removeEventListener('scroll', onScroll)
