@@ -35,8 +35,7 @@ export default function App() {
   useEffect(() => {
     if (!introDone) return
 
-    // Hero: auto-play PPT-style — elemen muncul satu per satu
-    // urutan DOM: eyebrow, h1, role, cbs, bio, edu-chip, hero-actions, photo-wrap, hl, scroll-hint
+    // Hero: elemen muncul satu per satu
     const heroDelays = [0, 420, 780, 1080, 1380, 1720, 2060, 360, 2420, 2820]
     const timers = []
     document.querySelectorAll('.hero-seq').forEach((el, i) => {
@@ -44,14 +43,45 @@ export default function App() {
       timers.push(t)
     })
 
-    // Sections bawah: IntersectionObserver seperti biasa
+    // IntersectionObserver untuk sections di bawah hero
     const io = new IntersectionObserver(
       entries => entries.forEach(e => {
         if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target) }
       }),
-      { threshold: 0.1 }
+      { threshold: 0.08 }
     )
     document.querySelectorAll('.rv:not(.hero-seq)').forEach(el => io.observe(el))
+
+    // Auto-tour: tiap section tampil beberapa detik lalu scroll ke section berikutnya
+    // User bisa stop kapanpun dengan scroll/swipe/key
+    const tour = [
+      { id: 'projects',   ms: 5000  },
+      { id: 'certs',      ms: 8000  },
+      { id: 'experience', ms: 6000  },
+      { id: 'skills',     ms: 7000  },
+      { id: 'contact',    ms: 6000  },
+    ]
+    let tourStep = 0
+    let tourTimer = null
+    let tourActive = true
+
+    const stopTour = () => { tourActive = false; clearTimeout(tourTimer) }
+
+    const runTour = () => {
+      if (!tourActive || tourStep >= tour.length) return
+      const { id, ms } = tour[tourStep]
+      tourTimer = setTimeout(() => {
+        if (!tourActive) return
+        document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
+        tourStep++
+        runTour()
+      }, ms)
+    }
+    runTour()
+
+    window.addEventListener('wheel',      stopTour, { passive: true, once: true })
+    window.addEventListener('touchstart', stopTour, { passive: true, once: true })
+    window.addEventListener('keydown',    stopTour, { once: true })
 
     const cup = new IntersectionObserver(
       entries => entries.forEach(e => {
@@ -113,6 +143,10 @@ export default function App() {
 
     return () => {
       timers.forEach(clearTimeout)
+      clearTimeout(tourTimer)
+      window.removeEventListener('wheel',      stopTour)
+      window.removeEventListener('touchstart', stopTour)
+      window.removeEventListener('keydown',    stopTour)
       io.disconnect()
       cup.disconnect()
       window.removeEventListener('scroll', onScroll)
