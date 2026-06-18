@@ -8,6 +8,7 @@ import Experience from './components/Experience'
 import Skills from './components/Skills'
 import Contact from './components/Contact'
 import Footer from './components/Footer'
+import MusicPlayer from './components/MusicPlayer'
 
 export default function App() {
   const [introDone, setIntroDone] = useState(false)
@@ -170,6 +171,7 @@ export default function App() {
         <Contact />
       </main>
       <Footer />
+      <MusicPlayer />
     </>
   )
 }
