@@ -6,7 +6,7 @@ const certs = [
   { img: '/cert-alibaba-sysop.png', alt: 'Alibaba Cloud Certified Associate System Operator', org: 'Alibaba Cloud', name: 'Associate System Operator' },
 ]
 
-const delay = ['', ' d1', ' d2']
+const delay = ['', ' d1', ' d2', ' d3', ' d4', ' d5']
 
 export default function Certs() {
   return (

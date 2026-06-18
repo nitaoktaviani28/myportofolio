@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Intro from './components/Intro'
 import Nav from './components/Nav'
 import Hero from './components/Hero'
@@ -11,6 +11,21 @@ import Footer from './components/Footer'
 
 export default function App() {
   const [introDone, setIntroDone] = useState(false)
+  const cursorRef = useRef({ x: -9999, y: -9999 })
+  const spotRef = useRef(null)
+  const barRef = useRef(null)
+
+  useEffect(() => {
+    const onMove = e => {
+      cursorRef.current = { x: e.clientX, y: e.clientY }
+      if (spotRef.current) {
+        spotRef.current.style.left = e.clientX + 'px'
+        spotRef.current.style.top = e.clientY + 'px'
+      }
+    }
+    window.addEventListener('mousemove', onMove, { passive: true })
+    return () => window.removeEventListener('mousemove', onMove)
+  }, [])
 
   useEffect(() => {
     document.body.style.overflow = introDone ? '' : 'hidden'
@@ -47,14 +62,34 @@ export default function App() {
     )
     document.querySelectorAll('[data-count]').forEach(el => cup.observe(el))
 
-    const photo = document.querySelector('.photo-wrap')
+    const photoWrap = document.querySelector('.photo-wrap')
+    const photoEl = document.querySelector('.photo')
+
     const onScroll = () => {
-      if (!photo || window.innerWidth <= 860) return
-      const r = photo.getBoundingClientRect()
+      // progress bar
+      const scrolled = window.scrollY
+      const total = document.body.scrollHeight - window.innerHeight
+      if (barRef.current) barRef.current.style.width = (total > 0 ? (scrolled / total) * 100 : 0) + '%'
+      // parallax
+      if (!photoWrap || window.innerWidth <= 860) return
+      const r = photoWrap.getBoundingClientRect()
       const p = (r.top + r.height / 2) / window.innerHeight
-      photo.style.transform = `translateY(${(p - 0.5) * -30}px)`
+      photoWrap.style.transform = `translateY(${(p - 0.5) * -30}px)`
     }
     window.addEventListener('scroll', onScroll, { passive: true })
+
+    // 3D tilt on photo
+    if (photoEl) {
+      const onTilt = e => {
+        const r = photoEl.getBoundingClientRect()
+        const x = (e.clientX - r.left) / r.width - 0.5
+        const y = (e.clientY - r.top) / r.height - 0.5
+        photoEl.style.transform = `rotateY(${x * 14}deg) rotateX(${-y * 14}deg) scale3d(1.03,1.03,1.03)`
+      }
+      const onTiltLeave = () => { photoEl.style.transform = '' }
+      photoEl.addEventListener('mousemove', onTilt)
+      photoEl.addEventListener('mouseleave', onTiltLeave)
+    }
 
     document.querySelectorAll('.btn').forEach(btn => {
       btn.addEventListener('mousemove', e => {
@@ -75,6 +110,8 @@ export default function App() {
 
   return (
     <>
+      <div ref={barRef} className="scroll-bar" style={{ width: '0%' }} />
+      <div ref={spotRef} className="cursor-spot" />
       <Intro onDone={() => setIntroDone(true)} />
       <div className="glow g1" />
       <div className="glow g2" />

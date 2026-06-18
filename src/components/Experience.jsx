@@ -24,7 +24,7 @@ export default function Experience() {
 
         <div className="timeline">
           {experiences.map((e, i) => (
-            <div key={i} className="exp rv">
+            <div key={i} className={`exp rv${i < 5 ? ` d${i}` : ''}`}>
               <div className="exp-card">
                 <div className="exp-info">
                   <h3>{e.title}</h3>

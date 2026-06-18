@@ -51,6 +51,10 @@ export default function Hero() {
           <div><div className="n" data-count="4">4</div><div className="l">Cloud Platforms</div></div>
         </div>
       </div>
+      <div className="scroll-hint rv d4">
+        <div className="scroll-hint-line" />
+        <span>scroll</span>
+      </div>
     </header>
   )
 }
